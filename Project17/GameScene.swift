@@ -18,6 +18,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     let possibleEnemies = ["ball", "tv", "hammer"]
+    var enemiesCreated = 0
+    
     var gameTimer: Timer?
     var gameOver = false
     
@@ -48,7 +50,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         physicsWorld.contactDelegate = self
         
         // Tip: The scheduledTimer() timer not only creates a timer, but also starts it immediately:
-        gameTimer = Timer.scheduledTimer(timeInterval: 0.35, target: self, selector: #selector(createEnemy), userInfo: nil, repeats: true)
+        gameTimer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(createEnemy), userInfo: nil, repeats: true)
         
     }
     
@@ -58,6 +60,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let sprite = SKSpriteNode(imageNamed: enemy)
         sprite.position = CGPoint(x: 1200, y: Int.random(in: 50...736))
         addChild(sprite)
+        enemiesCreated += 1
         
         sprite.physicsBody = SKPhysicsBody(texture: sprite.texture!, size: sprite.size)
         sprite.physicsBody?.categoryBitMask = 1
@@ -65,6 +68,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         sprite.physicsBody?.angularVelocity = 5
         sprite.physicsBody?.linearDamping = 0
         sprite.physicsBody?.angularDamping = 0
+        
+        if enemiesCreated >= 20 {
+            enemiesCreated = 0
+            if let interval = gameTimer?.timeInterval {
+                gameTimer?.invalidate()
+                gameTimer = Timer.scheduledTimer(timeInterval: interval * 0.9, target: self, selector: #selector(createEnemy), userInfo: nil, repeats: true)
+            }
+        }
     }
     
     
@@ -77,6 +88,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         if !gameOver {
             score += 1
+        } else {
+            gameTimer?.invalidate()
         }
     }
     
