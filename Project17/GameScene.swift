@@ -23,6 +23,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var gameTimer: Timer?
     var gameOver = false
     
+    var lastMoveJustFinished = true
+    
     override func didMove(to view: SKView) {
         backgroundColor = .black
         
@@ -96,23 +98,38 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) { // touchesMoved() is called when an existing touch changes position
         guard let touch = touches.first else { return }
         var location = touch.location(in: self)
+        
+        if lastMoveJustFinished {
+            guard nodes(at: location).contains(player) else {
+                print("cheating...")
+                return
+            }
 
+            lastMoveJustFinished = false
+        }
+        
+        print("Valid move")
+        
         if location.y < 100 {
             location.y = 100
         } else if location.y > 668 {
             location.y = 668
         }
-
+        
         player.position = location
+    }
+    
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        lastMoveJustFinished = true
     }
     
     func didBegin(_ contact: SKPhysicsContact) {
         let explosion = SKEmitterNode(fileNamed: "explosion")!
         explosion.position = player.position
         addChild(explosion)
-
+        
         player.removeFromParent()
-
+        
         gameOver = true
     }
 }
